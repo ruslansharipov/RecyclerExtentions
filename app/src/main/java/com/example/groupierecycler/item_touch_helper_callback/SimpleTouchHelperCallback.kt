@@ -12,6 +12,7 @@ class SimpleTouchHelperCallback<T>(
 
     var moveListener: ItemMoveListener<T>? = null
     var swipeListener: ItemSwipeListener<T>? = null
+    var stateListener: StateChangeListener? = null
     var isSwipeEnabled: Boolean = false
     var isLongPressEnabled: Boolean = false
 
@@ -51,14 +52,13 @@ class SimpleTouchHelperCallback<T>(
 
     override fun onSelectedChanged(viewHolder: RecyclerView.ViewHolder?, actionState: Int) {
         //super.onSelectedChanged(viewHolder, actionState)
-
-
-        val state = when (actionState){
-            0 -> "ACTION_STATE_IDLE"
-            1 -> "ACTION_STATE_SWIPE"
-            else -> "ACTION_STATE_DRAG"
+        viewHolder?.adapterPosition?.let {
+            when (actionState){
+                0 -> stateListener?.onIdle(it)
+                1 -> stateListener?.onSwipe(it)
+                else -> stateListener?.onMove(it)
+            }
         }
-        Log.d(TAG, state)
     }
 }
 

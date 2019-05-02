@@ -14,22 +14,24 @@ const val TAG = "MAIN_ACTIVITY"
 
 class MainActivity : AppCompatActivity() {
 
+    val adapter = TouchAdapter(R.layout.item_body, mutableListOf())
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val list = List(100) {
-            ListData.BodyData("#$it", "body item $it")
-        }.toMutableList()
+        swipeRefresh.setOnRefreshListener { generateSomeData() }
 
-        val adapter = TouchAdapter(R.layout.item_body, list)
+        initRecycler()
+        generateSomeData()
+    }
+
+    private fun initRecycler() {
         recyclerView.adapter = adapter
         recyclerView.layoutManager = LinearLayoutManager(this)
-
         val itemTouchHelperCallback = SimpleTouchHelperCallback(adapter).apply {
             isLongPressEnabled = true
             isSwipeEnabled = true
-
             moveListener = object : ItemMoveListener<ListData.BodyData> {
                 override fun onItemMove(item: ListData.BodyData, from: Int, to: Int) {
                     Log.d(TAG, "${item.body} moved from $from to $to")
@@ -39,11 +41,19 @@ class MainActivity : AppCompatActivity() {
                 override fun onItemSwipe(item: ListData.BodyData, position: Int) {
                     Log.d(TAG, "${item.body} removed from $position")
                 }
-
             }
         }
-
         ItemTouchHelper(itemTouchHelperCallback).attachToRecyclerView(recyclerView)
+    }
+
+    private fun generateSomeData() {
+        swipeRefresh.isRefreshing = true
+        val list = List(100) {
+            ListData.BodyData("#$it", "body item $it")
+        }.toMutableList()
+        adapter.items = list
+        adapter.notifyDataSetChanged()
+        swipeRefresh.isRefreshing = false
     }
 }
 
